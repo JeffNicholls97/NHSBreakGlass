@@ -1,0 +1,159 @@
+<section class="container">
+  <div class="top-bar">
+    <img src="images/logo.png" alt="logo" width="80">
+  </div>
+  <div class="top-bar-secondary">
+    <div class="heading-register">
+      <p>To create an account for NHS Break Glass, please fill in the form below </p>
+    </div>
+    <div class="login_form register-container">
+      <h2 class="login_title">Create NHS account</h2>
+      <form class="form_container">
+        <input id="firstname" type="text" name="text" placeholder="First Name">
+        <br>
+        <input id="secondname" type="text" name="text" placeholder="Second Name">
+        <br>
+        <!-- Method 1 - Drove me mad -->
+        <!-- <input type="text"
+        pattern="[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[nhs]+(?:\.[a-zA-Z0-9-]+)*"
+        required
+        oninvalid="this.setCustomValidity('Please use a valid NHS Email')"
+        oninput="setCustomValidity(' ')"
+        onvalid="setCustomValidity('')"
+
+        placeholder="Email"> -->
+
+        <!-- Method 2 - Dropdown for email domain, since there's only two anyways -->
+        <div class="emailLine">
+        <input id="email" class="email" type="text" required placeholder="Email">
+        <select id="domain" class="email">
+          <option value="@nhs.com">@nhs.com</option>
+          <option value="@nhs.net">@nhs.net</option>
+        </select>
+        </div>
+
+        <!-- Method 3 - Title - changes subtext of validation error box to whatever is in title, doesn't fuck stuff up doing it -->
+        <!-- <input type="text"
+        pattern="[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[nhs]+(?:\.[a-zA-Z0-9-]+)*"
+        required
+        title="@nhs.com or @nhs.net"
+        placeholder="Email"> -->
+        <br>
+        <input id="password" type="password" name="Password" placeholder="Password">
+        <br>
+        <select id="department" class="fullDrop">
+          <option value="" disabled selected>Select your deparment</option>
+          <option value="emergency">Emergency</option>
+          <option value="pediatrics">Pediatrics</option>
+          <option value="icu">Intensive Care</option>
+          <option value="coronary">Coronary Care</option>
+        </select>
+        <br />
+        <p class="validity"></p>
+        <button href type="submit" name="submit" onclick="validateForm(); return false"><strong>Create Account</strong></button>
+        <a href="#" class="home back-btn">Go back</a>
+      </form>
+    </div>
+  </div>
+</section>
+<script>
+  function validateForm() {
+    var firstname = document.getElementById("firstname").value;
+    var secondname = document.getElementById("secondname").value;
+    var password = document.getElementById("password").value;
+    var email = document.getElementById("email").value;
+    var domain = document.getElementById("domain").value;
+    var department = document.getElementById("department").value;
+    var fullEmail = email + domain;
+    console.log(fullEmail);
+
+
+    var firstNamePass = (firstname.length >= 2) ? true : false;
+    var secondNamePass = (secondname.length >= 2) ? true : false;
+    var emailPass = (email.length >= 2) ? true : false;
+    var passPass = (password.length >= 5) ? true : false;
+    var depPass = (department !== "") ? true : false;
+
+    if (firstNamePass && secondNamePass && passPass && depPass && emailPass) {
+      signUp(fullEmail, firstname, secondname, password, department);
+    } else if (firstNamePass == false) {
+      alert('Please check your first name');
+    } else if (secondNamePass == false) {
+      alert('Please check your second name');
+    } else if (emailPass == false) {
+      alert('Please check your email');
+    } else if (passPass == false) {
+      alert('Password must be at least 5 characters long')
+    } else if (depPass == false) {
+      alert('Please select a department')
+    }
+  }
+
+  function getDepartments() {
+    var method = "get";
+    var url = "http://localhost:50276/";
+    var path = "api/Departments";
+    var params = {};
+
+    console.log("calling API");
+    apiInteract(method, url, path, params, getDepartmentsResponse);
+
+}
+
+
+
+function getDepartmentsResponse(res) {
+    if (res != "null") {
+        var dropdown = document.getElementById("department");
+        dropdown.innerHTML = "";
+        var departments = JSON.parse(res);
+        console.log(departments);
+        for (var i = 0; i < departments.length; i++) {
+            var option = "<option value=" + departments[i].id + ">" + departments[i].name + "</option>"
+            dropdown.innerHTML += option;
+        }
+
+
+    } else {
+        console.log("error");
+    }
+}
+
+function signUp(email, firstname, secondname, password, dept_id) {
+    var method = "post";
+    var url = "http://localhost:50276/";
+    var path = "api/users?";
+    var params = {
+        email: "",
+        firstname: "",
+        secondname: "",
+        password: "",
+        dept_id:""
+
+
+    };
+    params.email = email;
+    params.firstname = firstname;
+    params.secondname = secondname;
+    params.password = password;
+    params.dept_id = dept_id;
+
+    console.log("calling API");
+    apiInteract(method, url, path, params, SignupResponse);
+
+}
+
+function SignupResponse(res) {
+    if (res == "false") {
+        alert("There was a problem signing up. Please try again later.");
+    } else {
+        console.log("signed up sucessfully");
+        changeAppPage("home");
+    }
+}
+    if (checkLogin()) {
+        changeAppPage("main");
+}
+
+       getDepartments(); 
+</script>

@@ -1,0 +1,239 @@
+<section class="container">
+  <div class="main-contain">
+    <div class="timer">
+      <p id="demo"></p>
+      <p id="date"></p>
+      <p id="month"></p>
+      <div class="Add-Event">
+        <div class="Plus" id="plus" style="display: none" >
+          <a href="#">+</a>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="scroll">
+      <div id="active"class="sub-title-main">
+        <p>Active Requests</p>
+      </div>
+      <!-- Template Active Card - Now Created through Script -->
+      <!-- <div class="card-main expand">
+      <div class="left-colour-active"></div>
+
+      <div class="grey-notify one">
+      <p class="main-title">Ward 19 | James Cook Hospital</p>
+      <p class="main-countdown">15mins left to accept</p>
+      <div class="accordion">
+      <hr>
+      <h2>Overview</h2>
+      <p class="overview-main">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <button class="view-button" type="button" name="button">View More</button>
+    </div>
+  </div>
+</div>  -->
+<div id="past" class="sub-title-main">
+  <p>Past Requests</p>
+</div>
+
+<!-- Template Past Card - Now Created through Script -->
+<!-- <div class="card-main">
+<div class="left-colour-inactive">
+</div>
+<div class="grey-notify">
+<p class="main-title">Cardiology | James Cook Hospital</p>
+<p class="main-countdown">Time Expired</p>
+</div>
+</div> -->
+
+</div> <!--Close scroll-->
+
+<div class="login-main">
+  <img class="pp" src="images/pp.png" alt="Profile Picture" width="50">
+  <p class="login-title">Logged in as</p>
+  <p id="username" class="login-sub"></p>
+  <p id="logout" class="logout" onclick="logOut()">Logout</p>
+</div>
+</div>
+</section>
+<script>
+
+  GetDate();
+
+  //   $('.one').click(function(){
+  //     $('.accordion').show();
+  //     var setHeight = "40"
+  //     $('.expand').css({'height': setHeight + "vh"});
+  // });
+
+  function buildActive(subID, subName, subEmail, subDate, subTime, subWard, subReason, subOptions, shiftRole, shiftStart, shiftEnd, shiftDay) {
+    var lastEntry = document.getElementById("active");  //Starting point for where to put the new card
+      $("<div>", {id: 'active' + subID, class:'card-main expand', click: function(){applyOnClick(subID)} })
+        .append("<div class=\"left-colour-active\"></div>" +
+                "<div class=\"grey-notify one\">" +
+                "<p class=\"main-title\">" + shiftRole + " for " + subWard + "</p>" +
+                "<p class=\"dateSubmitted\">Submitted at: " + subTime + "  </p>  " +
+                "<div id=\"activeToggle"+ subID +"\" class=\"accordion\"> <hr> <h2>Overview</h2>" +
+                "<p class=\"overview-main\"> Request submitted by: " + subName +
+                "<br/>Request for: " + subWard +
+                "<br/>Reason for unfilled shift: " + subReason +
+                "</p><button class=\"view-button\" type=\"button\" name=\"button\">View More</button>" +
+                "<div id=\"active" + subID + "Contents\"></div></div></div>")
+        .insertAfter(lastEntry)
+
+
+      // $("<div>", {id: 'activeRoleCard' + subID, class:'rolePost'})
+      //   .append("<p class=\"postRole\">" + shiftRole +"</p>" +
+      //           "<p class=\"postStart\">" + shiftStart +"</p>" +
+      //           "<p class=\"postEnd\">" + shiftEnd +"</p>" +
+      //           "<p class=\"postStart\">" + shiftDay +"</p>")
+      //   .appendTo(document.getElementById(activeEntryContents));
+  }
+
+  function buildPast(subID, subName, subEmail, subDate, subTime, subWard, subReason, subOptions, shiftRole, shiftStart, shiftEnd, shiftDay, status) {
+    var lastEntry = document.getElementById("past");
+      $("<div>", {id: 'past' + subID, class:'card-main expand', click: function(){applyOnClick(subID)} })
+        .append("<div class=\"left-colour-inactive\"></div>" +
+                "<div class=\"grey-notify one\">" +
+                "<p class=\"main-title\">" + shiftRole + " for " + subWard + "</p>" +
+                "<p class=\"dateSubmitted\">Submitted at: " + subTime + "  </p>  " +
+                "<p class=\"responseFrom\">" + status + "</p>" +
+                "<div class=\"accordion\"> <hr> <h2>Overview</h2>" +
+                "<p class=\"overview-main\"> Request submitted by: " + subName +
+                "<br/>Request for: " + subWard +
+                "<br/>Reason for unfilled shift: " + subReason +
+                "<button class=\"view-button\" type=\"button\" name=\"button\">View More</button>" +
+                "<div id=\"past" + subID + "Contents\"></div></div></div>")
+        .insertAfter(lastEntry)
+
+  }
+
+  function applyOnClick(id){
+    console.log(id);
+    localStorage.detailsID = id;
+    changeAppPage("details");
+  };
+
+
+
+var permissions;
+var deptString;
+function getPermissions() {
+    var method = "get";
+    var url = "http://localhost:50276/";
+    var path = "api/Permissions?";
+    var params = {
+        id: ""
+    };
+    params.id = getCookie("PermsID");
+    console.log("calling API");
+    apiInteract(method, url, path, params, getPermissionsResponse);
+
+}
+
+function getPermissionsResponse(res) {
+    if (res != "null") {
+        var perms = JSON.parse(res);
+        console.log("Permissions Retrieved");
+        console.log(perms);
+        checkPermissions(perms);
+
+
+    } else {
+        console.log("error");
+    }
+}
+
+function checkPermissions(perms) {
+    var userparam = {
+        User_id: "",
+    }
+    var deptparam = {
+        dept_id: "",
+    }
+    userparam.User_id = getCookie("userID");
+    permissions = perms;
+    localStorage.can_approve_req = perms.can_approve_req;
+    deptparam.dept_id = getCookie("DepartmentID");
+
+    console.log(perms.can_approve_req);
+
+    console.log(perms.can_make_req);
+    if (perms.can_approve_req == true) {
+        getRequests(deptparam);
+    } else if (perms.can_make_req == true) {
+        getRequests(userparam);
+        document.getElementById("plus").style.display = "block";
+    }
+
+};
+
+
+function getRequests(params) {
+    var method = "get";
+    var url = "http://localhost:50276/";
+    var path = "api/Requests?";
+    console.log("calling API");
+    apiInteract(method, url, path, params, getRequestsResponse);
+
+}
+function getRequestsResponse(res) {
+    console.log("Displaying Requests");
+    console.log(res);
+    var requests = JSON.parse(res);
+    var output = document.getElementById("container");
+    for (var i = 0; i < requests.length; i++) {
+      var subID = requests[i].id;
+      var subName = requests[i].Submitted_By;
+      var subEmail = requests[i].Submitted_Email;
+      var subDate = requests[i].Submission_Date;
+      var subTime = requests[i].Submission_Time;
+      var subWard = requests[i].DepartmentName;
+      var subReason = requests[i].Reason_for_Unfilled_Shift;
+      var subOptions = requests[i].Options_Considered;
+      var shiftRole = requests[i].Shift_Type_Name;
+      var shiftStart = requests[i].Shift_Time_Start;
+      var shiftEnd = requests[i].Shift_Time_End;
+      var shiftDay = requests[i].Shift_Date_Start;
+      var status;
+
+        if (requests[i].Approved_Rejected == "a") {
+            status = "Approved";
+        buildPast(subID, subName, subEmail, subDate, subTime, subWard, subReason, subOptions, shiftRole, shiftStart, shiftEnd, shiftDay, status);
+        } else if (requests[i].Approved_Rejected == "r") {
+            status = "Declined";
+
+            buildPast(subID, subName, subEmail, subDate, subTime, subWard, subReason, subOptions, shiftRole, shiftStart, shiftEnd, shiftDay, status);
+
+        } else {
+            status = "Pending";
+
+
+            buildActive(subID, subName, subEmail, subDate, subTime, subWard, subReason, subOptions, shiftRole, shiftStart, shiftEnd, shiftDay);
+        }
+
+        var url = "details.html?id=" + requests[i].id;
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if (!checkLogin()) {
+        changeAppPage("home");
+}
+    getPermissions();
+document.getElementById("username").innerHTML = getCookie("userName");
+</script>

@@ -1,0 +1,195 @@
+<div class="container">
+  <div class="f_back">
+    <p class="main">Go Back</p>
+  </div>
+  <div class="form_container_d">
+    <div class="blue_container">
+      <p class="strong color">Submisson Details</p>
+    </div>
+    <div class="labels">
+      <div class="flexydivvy">
+        <label for="w_name">Ward Matron Name: </label>
+        <p class="strong" id="ward_matron_name"></p>
+        <br>
+      </div>
+
+      <div class="flexydivvy">
+        <label for="email">Email Address: </label>
+        <p class="strong" id="email_address"></p>
+        <br>
+      </div>
+
+      <div class="flexydivvy">
+        <label for="date">Date of Submission: </label>
+        <p class="strong" id="sub_date"></p>
+        <br>
+      </div>
+      <div class="flexydivvy">
+        <label for="date">Time of Submission: </label>
+        <p class="strong" id="sub_time"></p>
+        <br>
+      </div>
+      <div class="flexydivvy">
+        <label for="ward">Ward: </label>
+        <p class="strong" id="ward"></p>
+        <br>
+      </div>
+
+      <div class="flexydivvy">
+        <label for="reason">Options Considered: </label>
+        <p class="strong" id="options"></p>
+        <br>
+      </div>
+    </div>
+    <div class="form-box">
+      <div class="p-box">
+        <p class="sub-title">Shift Details</p>
+        <p class="sub-p" id="tstartend"></p>
+        <p class="sub-p" id="shiftdate"></p>
+        <p class="sub-p" id="roleward"></p>
+        <p class="sub-p" id="r_for_shift"></p>
+      </div>
+    </div>
+
+    <div id="approvedecline" style="display: none">
+    <div class="blue_container">
+      <p class="strong color">Approval</p>
+    </div>
+    <div class="dropdown_a">
+      <select id="response">
+        <option disabled selected value="">Approve/Decline Request</option>
+        <option value="a">Approve Request</option>
+        <option value="r">Decline Request</option>
+      </select>
+      <div class="form-content">
+        <textarea id="reason" rows="4" placeholder="Reason for Approval/Denial..."></textarea>
+        <button type="button" name="button" onclick="validateForm(); return false">Submit Entry</button>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<script>
+function getRequestById() {
+    var method = "get";
+    var url = "http://localhost:50276/";
+    var path = "api/Requests?";
+    var params = {
+        id: "",
+    };
+
+    var idURL = getCookie("detailsID");
+    params.id = idURL;
+    console.log(params.id);
+    console.log("calling API");
+    apiInteract(method, url, path, params, getRequestByIdResponse);
+
+}
+
+
+
+function getRequestByIdResponse(res) {
+    if (res != "null") {
+        var request = JSON.parse(res);
+        console.log(request);
+        document.getElementById("ward_matron_name").innerHTML = request.Submitted_By;
+        document.getElementById("email_address").innerHTML = request.Submitted_Email ;
+        document.getElementById("sub_date").innerHTML = request.Submission_Date;
+        document.getElementById("sub_time").innerHTML = request.Submission_Time;
+        document.getElementById("ward").innerHTML = request.DepartmentName;
+        document.getElementById("r_for_shift").innerHTML = request.Reason_for_Unfilled_Shift;
+
+        document.getElementById("tstartend").innerHTML = "Shift Time: " + request.Shift_Time_Start + " - " + request.Shift_Time_End;
+        document.getElementById("shiftdate").innerHTML = request.Shift_Date_Start;
+        document.getElementById("roleward").innerHTML = request.Shift_Type_Name + " - " + request.DepartmentName;
+        document.getElementById("options").innerHTML = request.Options_Considered;
+        if(localStorage.can_approve_req == "false") {
+          document.getElementById("approvedecline").innerHTML = "";
+        }
+        if(request.Approved_Rejected !== "n"){
+          var status;
+          if(request.Approved_Rejected == "a"){
+            status = "Approved";
+          } else {
+            status = "Declined";
+          }
+          document.getElementById("approvedecline").innerHTML = "Status: " + status + "<br> Reason: " + request.Reason + "<br>Modified By: " + request.approved_rejected_by_username + "<br>" + request.approved_rejected_by_email;
+
+        }
+        document.getElementById("approvedecline").style.display = "block";
+
+    } else {
+        console.log("error getting Request Data");
+    }
+};
+
+function validateForm() {
+  var response = document.getElementById("response").value;
+  var reason = document.getElementById("reason").value;
+
+  var responsePass = (response !== "") ? true : false;
+  var reasonPass = (reason !== "") ? true : false;
+
+
+  if (responsePass && reasonPass) {
+    submitResponse(response, reason);
+  } else if (responsePass == false) {
+    alert('Please Approve or Decline');
+  } else if (reasonPass == false) {
+    alert('Please submit a reason for your response');
+  }
+}
+
+function submitResponse(response, reason){
+    var method = "Post";
+    var url = "http://localhost:50276/";
+    var path = "api/Requests/";
+    var params = {
+        approved_rejected_by_user_id: "",
+        Approved_Rejected: response,
+        Reason: reason,
+    };
+
+    var idURL = getCookie("detailsID");
+    path += idURL + "?";
+    params.approved_rejected_by_user_id = getCookie("userID");
+    console.log(params);
+    console.log("calling API");
+    apiInteract(method, url, path, params, submitResponseReturn);
+};
+
+function submitResponseReturn(res) {
+    if (res != "false") {
+        console.log("Response posted sucessfully");
+        changeAppPage("main");
+    } else {
+        alert("There was an error posting your response. Please try signing out and back in.");
+        changeAppPage("main");
+    }
+}
+
+    if (!checkLogin()) {
+        changeAppPage("home");
+    }
+
+
+getRequestById();
+</script>
+
+
+
+
+<!--
+  Ward Matron Name
+  ward matron email
+  Date of submission
+  ward
+  Reason for shift
+
+    GREY BOX container
+      time
+      Date Function from first view
+      Staff details
+
+-->

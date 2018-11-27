@@ -1,0 +1,66 @@
+<section class="container">
+  <div class="login_header">
+    <div class="login_logo_container">
+      <div class="login_logo">
+        <img src="images/logo.png" alt="logo" width="160">
+      </div>
+    </div>
+  </div>
+
+  <div class="login_form">
+    <h2 class="login_title">Log in using your NHS Credentials</h2>
+    <form class="form_container">
+      <input type="text" name="Email Address" id="email" placeholder="Email">
+      <br>
+      <input type="password" name="Password" id="password" placeholder="Password">
+      <br>
+      <button type="submit" id="submit" name="submit"><strong>Sign In</strong></button>
+    </form>
+    <a id="register" class="reg-link" href="">Register for an account</a>
+
+  </div>
+</section>
+<script type="text/javascript">
+  function login() {
+    var method = "get";
+    var url = "http://localhost:50276/";
+    var params = "api/Users?";
+    var user = {
+        email: "",
+        password: "",
+    };
+    user.email = document.getElementById("email").value;
+    user.password = document.getElementById("password").value;
+    console.log("calling API");
+    apiInteract(method, url, params, user, response);
+
+}
+
+
+
+function response(res) {
+    if (res != "null") {
+        var user = JSON.parse(res);
+        localStorage.userID = user.id;
+        localStorage.userName = user.firstname + " " + user.secondname;
+        localStorage.PermsID = user.usertype_id;
+        localStorage.DepartmentID = user.dept_id;
+        console.log("logged in sucessfully");
+        changeAppPage("main");
+
+
+    } else {
+        alert("There was a problem signing in. Please ensure that your username and password are correct.");
+    }
+};
+
+
+
+
+    var button = document.getElementById("submit");
+    button.onclick = function () { login(); return false; };
+    if (checkLogin()) {
+        changeAppPage("main");
+}
+console.log(getCookie("userID"));
+</script>

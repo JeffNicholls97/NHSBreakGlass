@@ -1,0 +1,158 @@
+<section class="container">
+  <div class="a_back">
+    <p class="main">Go Back</p>
+  </div>
+  <div class="pad"></div>
+  <div class="blue_container">
+    <p class="strong color">Request Form</p>
+  </div>
+  <div class="create-form">
+    <form class="form_container">
+      <p class="form-p">Shift Date</p>
+      <input type="date" id="dstart" name="date">
+      <br>
+      <p class="form-p">Shift Start Time</p>
+      <input type="time" id="tstart" name="time-start">
+      <br>
+      <p class="form-p">Shift End Time</p>
+      <input type="time" id="tend" name="time-end">
+      <br>
+      <p class="form-p">Shift Type</p>
+      <select class="shift-type" id="shift-type" name="dropdown-shift" placeholder"Select a Reason">
+        <option value="Example 1">Example 1</option>
+        <option value="Example 2">Example 2</option>
+        <option value="Example 3">Example 3</option>
+        <option value="Example 4">Example 4</option>
+      </select>
+      <br>
+      <p class="form-p">Reason for Unfilled Shift</p>
+      <input type="text" id="reason" name="text-shift">
+      <br>
+      <p class="form-p">Options Considered</p>
+      <input type="text" id="options" name="text-shift">
+      <button class="submit-btn" type="submit" name="submit" onclick="validateForm(); return false;"><strong>Submit Form for Approval</strong></button>
+    </form>
+  </div>
+</section>
+
+
+<!--
+  Date Shift Starts
+  Time Shift Start
+  Time Shift End
+  Shift Type -> Droppdown
+  Reason for unfulfilled shift
+  options considered
+ -->
+ <script type="text/javascript">
+function getShiftTypes() {
+    var method = "get";
+    var url = "http://localhost:50276/";  //adding url to api call is now obsolete. only addable from core.js file. couldnt be arsed to change the function tho so it still needs to pass url to it
+    var path = "api/Shift_Type";
+    var params = {};
+
+    console.log("calling API");
+    apiInteract(method, url, path, params, getShiftTypesResponse);
+
+}
+
+
+
+function getShiftTypesResponse(res) {
+    if (res != "null") {
+        var dropdown = document.getElementById("shift-type");
+        dropdown.innerHTML = "";
+        var types = JSON.parse(res);
+        console.log(types);
+        for (var i = 0; i < types.length; i++) {
+            var option = "<option value=" + types[i].id + ">" + types[i].name + "</option>"
+            dropdown.innerHTML += option;
+        }
+
+
+    } else {
+        console.log("error");
+    }
+};
+  function validateForm() {
+    var dstart = document.getElementById("dstart").value;
+    var tstart = document.getElementById("tstart").value;
+    var tend = document.getElementById("tend").value;
+    var type = document.getElementById("shift-type").value;
+    var reason = document.getElementById("reason").value;
+    var options = document.getElementById("options").value;
+
+    if(dstart == ""){
+      console.log("true");
+    }
+        if(tstart == ""){
+      console.log("true");
+    }
+
+    console.log(dstart);
+    console.log(tstart);
+
+    var dstartPass = (dstart !== "") ? true : false;
+    var tstartPass = (tstart !== "") ? true : false;
+    var tendPass = (tend !== "") ? true : false;
+    var typePass = (type !== "") ? true : false;
+    var reasonPass = (reason.length  >= 2) ? true : false;
+    var optionPass = (options.length  >= 2) ? true : false;
+
+
+    if (dstartPass && tstartPass && tendPass && typePass && reasonPass && optionPass) {
+      postNewReq(dstart, tstart, tend, type, reason, options);
+    } else if (dstartPass == false) {
+      alert('Please enter a valid shift start date');
+    } else if (tstartPass == false) {
+      alert('Please enter a valid shift start time');
+    } else if (tendPass == false) {
+      alert('Please enter a valid shift end time');
+    } else if (reasonPass == false) {
+      alert('Please enter a valid reason')
+    } else if (optionPass == false) {
+      alert('Please state the options considered')
+    }
+  }
+
+function postNewReq(dstart, tstart, tend, type, reason, options) {
+    var method = "post";
+    var url = "http://localhost:50276/";
+    var path = "api/Requests?";
+    var params = {
+        User_id: "",
+        dept_id: "",
+        Shift_Date_Start: dstart,
+        Shift_Time_Start: tstart,
+        Shift_Time_End: tend,
+        Shift_Type_id: type,
+        Reason_for_Unfilled_Shift: reason,
+        Options_Considered: options
+
+
+    };
+    params.User_id = getCookie("userID");
+    params.dept_id = getCookie("DepartmentID");
+    console.log("calling API");
+    apiInteract(method, url, path, params, newReqResponse);
+
+}
+
+function newReqResponse(res) {
+    if (res == "false") {
+        alert("Could not create new request. Please try logging out and back in.");
+        changeAppPage("main");
+    } else {
+        alert("Request Created sucessfully");
+        changeAppPage("main");
+    }
+}
+
+     if (!checkLogin()) {
+            changeAppPage("home");
+    }
+
+    getShiftTypes();
+
+
+ </script>
